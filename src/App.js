@@ -1,24 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col } from 'react-bootstrap';
+import TaskList from './components/TaskList';
+import TaskForm from './components/TaskForm';
+import api from './services/api';
 
 function App() {
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    // Fetch tasks from the API when the component mounts
+    api.get('/tasks').then(response => {
+      setTasks(response.data);
+    });
+  }, []);
+
+  const handleTaskAdded = newTask => {
+    // Update the state with the new task
+    api.get('/tasks').then(response => {
+      setTasks(response.data);
+    });
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <Row>
+        <Col md={6}>
+          <TaskList />
+        </Col>
+        <Col md={6}>
+          <TaskForm onTaskAdded={handleTaskAdded} />
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
