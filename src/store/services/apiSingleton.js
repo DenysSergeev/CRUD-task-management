@@ -1,4 +1,4 @@
-import { createApi, fetchBaseQuery, retry } from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
 
 const tasksQuery = fetchBaseQuery({
   baseUrl: `${process.env.REACT_APP_API_HOST}:${process.env.REACT_APP_API_PORT}`,
@@ -7,7 +7,7 @@ const tasksQuery = fetchBaseQuery({
 const tasksQueryWithRetry = retry(tasksQuery, { maxRetries: 3 });
 
 export const tasksApi = createApi({
-  reducerPath: "TasksAPI",
+  reducerPath: 'TasksAPI',
   baseQuery: tasksQueryWithRetry,
   endpoints: () => ({}),
 });

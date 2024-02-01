@@ -1,5 +1,4 @@
 import { tasksApi } from './apiSingleton.js';
-// import { ITask } from '../slices/tasksSlice.ts';
 
 export const TasksAPI = tasksApi.injectEndpoints({
   endpoints: builder => ({
