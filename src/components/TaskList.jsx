@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, ListGroup, Modal, Form } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import api from '../services/api';
 
-const TaskList = () => {
-  const [tasks, setTasks] = useState([]);
+import { useTypedSelector } from '../store/store.js';
+
+import 'react-datepicker/dist/react-datepicker.css';
+
+const TaskList = ({ editTask, deleteTask }) => {
+  const { list } = useTypedSelector(state => state.tasks);
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedTask, setEditedTask] = useState({
     id: null,
@@ -14,52 +17,27 @@ const TaskList = () => {
     date: new Date(),
   });
 
-  useEffect(() => {
-    // Fetch tasks from the API when the component mounts
-    api.get('/tasks').then(response => {
-      setTasks(response.data);
-    });
-  }, []);
-
-  const handleDelete = taskId => {
-    // Delete task and update the state
-    api.delete(`/tasks/${taskId}`).then(() => {
-      setTasks(tasks.filter(task => task.id !== taskId));
-    });
-  };
-
   const handleEdit = task => {
     setEditedTask({ ...task, date: new Date(task.date) });
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    // Convert the date to a string before saving
+  const handleSaveEdit = async () => {
     const editedTaskWithDateString = {
       ...editedTask,
       date: editedTask.date.toISOString(),
     };
 
-    // Update task and close the modal
-    api
-      .put(`/tasks/${editedTaskWithDateString.id}`, editedTaskWithDateString)
-      .then(() => {
-        setTasks(
-          tasks.map(task =>
-            task.id === editedTaskWithDateString.id
-              ? editedTaskWithDateString
-              : task
-          )
-        );
-        setShowEditModal(false);
-      });
+    await editTask(editedTaskWithDateString);
+    setShowEditModal(false);
   };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Task List</h2>
+
       <ListGroup style={{ maxWidth: '600px', margin: '0 auto' }}>
-        {tasks.map(task => (
+        {list.map(task => (
           <ListGroup.Item
             key={task.id}
             style={{
@@ -77,7 +55,9 @@ const TaskList = () => {
               <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
                 {task.title}
               </div>
+
               <div>Status: {task.status}</div>
+
               <div>
                 Date:{' '}
                 {new Date(task.date).toLocaleDateString('en-US', {
@@ -87,6 +67,7 @@ const TaskList = () => {
                 })}
               </div>
             </div>
+
             <div>
               <Button
                 variant='info'
@@ -95,7 +76,8 @@ const TaskList = () => {
               >
                 Edit
               </Button>
-              <Button variant='danger' onClick={() => handleDelete(task.id)}>
+
+              <Button variant='danger' onClick={() => deleteTask(task.id)}>
                 Delete
               </Button>
             </div>
@@ -108,6 +90,7 @@ const TaskList = () => {
         <Modal.Header closeButton>
           <Modal.Title>Edit Task</Modal.Title>
         </Modal.Header>
+
         <Modal.Body>
           <Form>
             <Form.Group
@@ -119,6 +102,7 @@ const TaskList = () => {
               }}
             >
               <Form.Label>Title</Form.Label>
+
               <Form.Control
                 type='text'
                 value={editedTask.title}
@@ -127,6 +111,7 @@ const TaskList = () => {
                 }
               />
             </Form.Group>
+
             <Form.Group
               controlId='formEditStatus'
               style={{
@@ -136,6 +121,7 @@ const TaskList = () => {
               }}
             >
               <Form.Label>Status</Form.Label>
+
               <Form.Control
                 as='select'
                 value={editedTask.status}
@@ -147,6 +133,7 @@ const TaskList = () => {
                 <option value='completed'>Completed</option>
               </Form.Control>
             </Form.Group>
+
             <Form.Group
               controlId='formEditDate'
               style={{
@@ -156,6 +143,7 @@ const TaskList = () => {
               }}
             >
               <Form.Label>Date</Form.Label>
+
               <DatePicker
                 selected={editedTask.date}
                 onChange={newDate =>
@@ -167,10 +155,12 @@ const TaskList = () => {
             </Form.Group>
           </Form>
         </Modal.Body>
+
         <Modal.Footer>
           <Button variant='secondary' onClick={() => setShowEditModal(false)}>
             Close
           </Button>
+
           <Button variant='primary' onClick={handleSaveEdit}>
             Save Changes
           </Button>
